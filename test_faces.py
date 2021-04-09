@@ -14,17 +14,17 @@ class imagePreProcess():
 
   # Read all images and store them in array itself
   def read_images(self, allFiles):
-  	readImages, failedInstances = [], []
-  	for x in tqdm(allFiles, leave=True, position=0):
-      try:
-    		img = tf.io.read_file(x)
-    		img = tf.image.decode_jpeg(img, channels = 3)
-    		readImages.append(img.numpy())
-      except:
-        failedInstances.append(x)
-        continue
-    print(f'Number of files with issues: {len(failedInstances)}')
-  	return readImages
+        readImages, failedInstances = [], []
+        for x in tqdm(allFiles, leave=True, position=0):
+            try:
+                img = tf.io.read_file(x)
+                img = tf.image.decode_jpeg(img, channels = 3)
+                readImages.append(img.numpy())
+            except:
+                failedInstances.append(x)
+                continue
+        print(f'Number of files with issues: {len(failedInstances)}')
+        return readImages
 
   # This function will return the file paths which has full white pictures
   def flaggingWhiteFrames(self, isPickled=True, picklePath=None):

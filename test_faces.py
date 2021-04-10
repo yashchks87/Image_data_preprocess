@@ -2,6 +2,7 @@ from tqdm import tqdm
 import cv2, pickle
 import tensorflow as tf
 import numpy as np
+from multiprocessing import Pool
 
 class imagePreProcess():
   def __init__(self, original_images, read=False):
@@ -10,21 +11,15 @@ class imagePreProcess():
     else:
       	self.original_images = original_images
     if read:
-		    self.readImages = self.read_images(original_images)
+        with Pool(4) as p:
+            self.readImages = list(tqdm(p.imap(self.read_images, original_images), total=len(self.original_images), position=0, leave=True))
+# 		    self.readImages = self.read_images(original_images)
 
   # Read all images and store them in array itself
   def read_images(self, allFiles):
-        readImages, failedInstances = [], []
-        for x in tqdm(allFiles, leave=True, position=0):
-            try:
-                img = tf.io.read_file(x)
-                img = tf.image.decode_jpeg(img, channels = 3)
-                readImages.append(img.numpy())
-            except:
-                failedInstances.append(x)
-                continue
-        print(f'Number of files with issues: {len(failedInstances)}')
-        return readImages
+      img = tf.io.read_file(allFiles)
+      img = tf.image.decode_jpeg(img, channels = 3)
+      return np.array(img.numpy().astype(np.uint8))
 
   # This function will return the file paths which has full white pictures
   def flaggingWhiteFrames(self, isPickled=True, picklePath=None):

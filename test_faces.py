@@ -2,18 +2,19 @@ from tqdm import tqdm
 import cv2, pickle
 import tensorflow as tf
 import numpy as np
-from multiprocessing import Pool
+import multiprocessing as mp
 
 class imagePreProcess():
   def __init__(self, original_images, read=False, poolSize=2):
+    
     if type(original_images) != list:
-      	self.original_images = [original_images]
+    	self.original_images = [original_images]
     else:
-      	self.original_images = original_images
+    	self.original_images = original_images
     if read:
-        with Pool(poolSize) as p:
-            self.readImages = list(tqdm(p.imap(self.read_images, original_images), total=len(self.original_images), position=0, leave=True))
-# 		    self.readImages = self.read_images(original_images)
+      ctx = mp.get_context('spawn')
+      with ctx.Pool(poolSize) as p:
+          self.readImages = list(tqdm(p.imap(self.read_images, original_images), total=len(self.original_images), position=0, leave=True))
 
   # Read all images and store them in array itself
   def read_images(self, allFiles):

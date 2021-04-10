@@ -5,13 +5,13 @@ import numpy as np
 from multiprocessing import Pool
 
 class imagePreProcess():
-  def __init__(self, original_images, read=False):
+  def __init__(self, original_images, read=False, poolSize=2):
     if type(original_images) != list:
       	self.original_images = [original_images]
     else:
       	self.original_images = original_images
     if read:
-        with Pool(4) as p:
+        with Pool(poolSize) as p:
             self.readImages = list(tqdm(p.imap(self.read_images, original_images), total=len(self.original_images), position=0, leave=True))
 # 		    self.readImages = self.read_images(original_images)
 

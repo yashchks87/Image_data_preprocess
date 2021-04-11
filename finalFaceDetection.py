@@ -73,3 +73,5 @@ def start(files, poolSize, superClean=False, youWantDict=False):
 		return (img, box)
 	return imgAndBoxCleaned
 
+if __name__ == '__main__':
+	start()

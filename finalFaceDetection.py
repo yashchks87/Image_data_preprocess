@@ -15,7 +15,7 @@ def flaggingWhiteFramesAndDetectFaces(imgPath):
             blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
             cv2DNN.setInput(blob)
             detections = cv2DNN.forward()
-            curr = []
+            curr, failed = [], []
             for i in range(0, detections.shape[2]):
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype("int")
@@ -33,7 +33,8 @@ def flaggingWhiteFramesAndDetectFaces(imgPath):
         else:
             return
     except:
-        readingProblem.append(imgPath)
+        # readingProblem.append(imgPath)
+        return
 
 def removeEmptyBoxes(imageAndBox):
 	img, box = imageAndBox[0], imageAndBox[1]
@@ -55,23 +56,25 @@ def checkTrueBoundingBox(imageAndBox):
 	if len(curr) > 0:
 		return (imgPath, curr)
 
-def start(files, poolSize, superClean=False, youWantDict=False):
-	readingProblem = []
-	with Pool(poolSize) as p:		
-		faceDetected = list(tqdm(p.imap(flaggingWhiteFramesAndDetectFaces, files), total=len(files), position=0, leave=True))
-	faceDetectedCleaned = [x for x in faceDetected if x is not None]
-	with Pool(poolSize) as p:
-		removedEmptyBoxes = list(tqdm(p.imap(removeEmptyBoxes, faceDetectedCleaned), total=len(faceDetectedCleaned), position=0, leave=True))
-	removedEmptyBoxesCleaned = [x for x in removeEmptyBoxes if x is not None]
-	with Pool(poolSize) as p:
-		imgAndBox = list(tqdm(p.imap(removedEmptyBoxesCleaned, temp1), total=len(removedEmptyBoxesCleaned), position=0, leave=True))
-	imgAndBoxCleaned = [x for x in imgAndBox if x is not None]
-	if superClean:
-		img, box = [x[0] for x in imgAndBoxCleaned], [x[1][0] for x in imgAndBoxCleaned]
-		if youWantDict:
-			return dict(zip(img, box))
-		return (img, box)
-	return imgAndBoxCleaned
+def start(files, poolSize, protoText, caffeModel, superClean=False, youWantDict=False):
+  global cv2DNN
+  cv2DNN = cv2.dnn.readNetFromCaffe(protoText, caffeModel)
+	# readingProblem = []
+  with Pool(poolSize) as p:		
+    faceDetected = list(tqdm(p.imap(flaggingWhiteFramesAndDetectFaces, files), total=len(files), position=0, leave=True))
+  faceDetectedCleaned = [x for x in faceDetected if x is not None]
+  with Pool(poolSize) as p:
+    removedEmptyBoxes = list(tqdm(p.imap(removeEmptyBoxes, faceDetectedCleaned), total=len(faceDetectedCleaned), position=0, leave=True))
+  removedEmptyBoxesCleaned = [x for x in removedEmptyBoxes if x is not None]
+  with Pool(poolSize) as p:
+    imgAndBox = list(tqdm(p.imap(checkTrueBoundingBox, removedEmptyBoxesCleaned), total=len(removedEmptyBoxesCleaned), position=0, leave=True))
+  imgAndBoxCleaned = [x for x in imgAndBox if x is not None]
+  if superClean:
+    img, box = [x[0] for x in imgAndBoxCleaned], [x[1][0] for x in imgAndBoxCleaned]
+    if youWantDict:
+      return dict(zip(img, box))
+    return (img, box)
+  return imgAndBoxCleaned
 
 if __name__ == '__main__':
 	start()

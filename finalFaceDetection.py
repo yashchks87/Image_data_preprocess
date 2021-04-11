@@ -65,17 +65,20 @@ def start(files, poolSize, protoText, caffeModel, superClean=False, youWantDict=
   with Pool(poolSize) as p:		
     faceDetected = list(tqdm(p.imap(flaggingWhiteFramesAndDetectFaces, files), total=len(files), position=0, leave=True))
   faceDetectedCleaned = [x for x in faceDetected if x is not None]
-  print(f'\nLoss of files: {(1-(len(faceDetectedCleaned)/len(files)))*100}')
+  p1 = '{:.2f}'.format((1-(len(faceDetectedCleaned)/len(files)))*100)
+  print(f'\nLoss of files: {p1} %')
   print('\n***************** Removal of empty boxes started *****************')
   with Pool(poolSize) as p:
     removedEmptyBoxes = list(tqdm(p.imap(removeEmptyBoxes, faceDetectedCleaned), total=len(faceDetectedCleaned), position=0, leave=True))
   removedEmptyBoxesCleaned = [x for x in removedEmptyBoxes if x is not None]
-  print(f'\nLoss of files: {(1-(len(removedEmptyBoxesCleaned)/len(files)))*100}')
+  p2 = '{:.2f}'.format((1-(len(removedEmptyBoxesCleaned)/len(files)))*100)
+  print(f'\nLoss of files: {p2} %')
   print('\n***************** Removal of erronous function started *****************')
   with Pool(poolSize) as p:
     imgAndBox = list(tqdm(p.imap(checkTrueBoundingBox, removedEmptyBoxesCleaned), total=len(removedEmptyBoxesCleaned), position=0, leave=True))
   imgAndBoxCleaned = [x for x in imgAndBox if x is not None]
-  print(f'\nLoss of files: {(1-(len(imgAndBoxCleaned)/len(files)))*100}')
+  p3 = '{:.2f}'.format((1-(len(imgAndBoxCleaned)/len(files)))*100)
+  print(f'\nLoss of files: {p3} %')
   if superClean:
     img, box = [x[0] for x in imgAndBoxCleaned], [x[1][0] for x in imgAndBoxCleaned]
     if youWantDict:

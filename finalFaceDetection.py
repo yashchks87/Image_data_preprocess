@@ -6,34 +6,34 @@ from multiprocessing import Pool
 
 
 def flaggingWhiteFramesAndDetectFaces(imgPath):
-	try:
-	    temp = tf.io.read_file(imgPath)
-	    temp = tf.image.decode_jpeg(temp, channels=3)
-	    iamge = temp.numpy().astype(np.uint8)
-	    if np.mean(image) != 255:
-	    	(h, w) = image.shape[:2]
-	    	blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
-	    	cv2DNN.setInput(blob)
-	    	detections = cv2DNN.forward()
-	    	curr = []
-	    	for i in range(0, detections.shape[2]):
-	      		box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-	      		(startX, startY, endX, endY) = box.astype("int")
-	      		confidence = detections[0, 0, i, 2]
-	      		# If confidence > 0.5, save it as a separate file
-	  			if (confidence > 0.5):
-					# frame = x[startY:endY, startX:endX]
-	        		final3, final4 = endY - startY, endX - startX
-	        		# For detecting any thing less than 0 error
-	        		if final3 < 0 or final4 < 0:
-	          			# Appending for clearly 
-	          			failed.append(imgPath)
-	        		curr.append([startY, startX, final3, final4])
-	       	return imgPath, curr
-	    else:
-	      return
+    try:
+        temp = tf.io.read_file(imgPath)
+        temp = tf.image.decode_jpeg(temp, channels=3)
+        image = temp.numpy().astype(np.uint8)
+        if np.mean(image) != 255:
+            (h, w) = image.shape[:2]
+            blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+            cv2DNN.setInput(blob)
+            detections = cv2DNN.forward()
+            curr = []
+            for i in range(0, detections.shape[2]):
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                (startX, startY, endX, endY) = box.astype("int")
+                confidence = detections[0, 0, i, 2]
+                # If confidence > 0.5, save it as a separate file
+                if (confidence > 0.5):
+                    # frame = x[startY:endY, startX:endX]
+                    final3, final4 = endY - startY, endX - startX
+                    # For detecting any thing less than 0 error
+                    if final3 < 0 or final4 < 0:
+                        # Appending for clearly 
+                        failed.append(imgPath)
+                    curr.append([startY, startX, final3, final4])
+            return imgPath, curr
+        else:
+            return
     except:
-    	readingProblem.append(imgPath)
+        readingProblem.append(imgPath)
 
 def removeEmptyBoxes(imageAndBox):
 	img, box = imageAndBox[0], imageAndBox[1]

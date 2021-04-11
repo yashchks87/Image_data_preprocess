@@ -20,6 +20,7 @@ class imagePreProcess():
   def read_images(self, allFiles):
       img = tf.io.read_file(allFiles)
       img = tf.image.decode_jpeg(img, channels = 3)
+      img = tf.image.resize(img, size=(500,500))
       return np.array(img.numpy().astype(np.uint8))
 
   # This function will return the file paths which has full white pictures

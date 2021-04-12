@@ -3,6 +3,7 @@ import cv2, pickle
 import tensorflow as tf
 import numpy as np
 from multiprocessing import Pool
+import pickle
 
 
 def flaggingWhiteFramesAndDetectFaces(imgPath):
@@ -56,7 +57,7 @@ def checkTrueBoundingBox(imageAndBox):
 	if len(curr) > 0:
 		return (imgPath, curr)
 
-def start(files, poolSize, protoText, caffeModel, superClean=False, youWantDict=False):
+def start(files, poolSize, protoText, caffeModel, superClean=False, youWantDict=False, isPickled=False, picklePath=None):
   global cv2DNN
   print('CV2 Model Initiated')
   cv2DNN = cv2.dnn.readNetFromCaffe(protoText, caffeModel)
@@ -79,6 +80,12 @@ def start(files, poolSize, protoText, caffeModel, superClean=False, youWantDict=
   imgAndBoxCleaned = [x for x in imgAndBox if x is not None]
   p3 = '{:.2f}'.format((1-(len(imgAndBoxCleaned)/len(files)))*100)
   print(f'\nLoss of files: {p3} %')
+  if isPickled and picklePath is not None:
+  	img, box = [x[0] for x in imgAndBoxCleaned], [x[1][0] for x in imgAndBoxCleaned]
+  	tempDict = dict(zip(img, box))
+  	with open(picklePath, 'wb') as handle:
+  		pickle.dump(tempDict, handle)
+  	print('Picklization is finished.')
   if superClean:
     img, box = [x[0] for x in imgAndBoxCleaned], [x[1][0] for x in imgAndBoxCleaned]
     if youWantDict:

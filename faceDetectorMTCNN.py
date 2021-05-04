@@ -6,8 +6,6 @@ from multiprocessing import Pool
 import pickle
 from facenet_pytorch import MTCNN
 
-img = tf.io.gfile.glob('gs://wiki_data_faces/files1/*.jpg')
-
 def flaggingWhiteFramesAndDetectFaces(imgPath):
     try:
         temp = tf.io.read_file(imgPath)
